@@ -37,12 +37,13 @@
     <option id="avr32.drivers.pm" value="Add" config="" content-id="Atmel.ASF" />
     <option id="avr32.drivers.pwm" value="Add" config="" content-id="Atmel.ASF" />
     <option id="avr32.drivers.ssc.i2s" value="Add" config="" content-id="Atmel.ASF" />
+    <option id="avr32.utils.debug" value="Add" config="" content-id="Atmel.ASF" />
     <option id="avr32.utils.print_funcs" value="Add" config="" content-id="Atmel.ASF" />
     <option id="common.boards" value="Add" config="" content-id="Atmel.ASF" />
     <option id="common.services.basic.clock" value="Add" config="" content-id="Atmel.ASF" />
     <option id="common.services.delay" value="Add" config="" content-id="Atmel.ASF" />
     <option id="common.services.usb.class.device" value="Add" config="vendor_class" content-id="Atmel.ASF" />
-    <option id="avr32.utils.debug" value="Add" config="" content-id="Atmel.ASF" />
+    <option id="avr32.drivers.pdca" value="Add" config="" content-id="Atmel.ASF" />
     <option id="avr32.drivers.ssc_i2s.example" value="Add" config="" content-id="Atmel.ASF" />
   </options>
   <configurations>
@@ -142,6 +143,8 @@
     <file path="src/config/conf_board.h" framework="" version="" source="common/applications/user_application/user_board/config/conf_board.h" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/common/boards/user_board/init.c" framework="" version="" source="common/boards/user_board/init.c" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/common/boards/user_board/user_board.h" framework="" version="" source="common/boards/user_board/user_board.h" changed="False" content-id="Atmel.ASF" />
+    <file path="src/ASF/avr32/drivers/pdca/pdca.c" framework="" version="3.52.0" source="avr32\drivers\pdca\pdca.c" changed="False" content-id="Atmel.ASF" />
+    <file path="src/ASF/avr32/drivers/pdca/pdca.h" framework="" version="3.52.0" source="avr32\drivers\pdca\pdca.h" changed="False" content-id="Atmel.ASF" />
   </files>
   <documentation help="https://asf.microchip.com/docs/3.52.0/common.applications.user_application.user_board.uc3b/html/index.html" />
   <offline-documentation help="" />
@@ -152,7 +155,22 @@
   <board id="board.user_board.uc3b" value="Add" config="" content-id="Atmel.ASF" />
 </framework-data>
     </AsfFrameworkConfig>
-    <avrtool />
+    <avrtool>com.atmel.avrdbg.tool.jtagice3plus</avrtool>
+    <avrtoolserialnumber>J30200006282</avrtoolserialnumber>
+    <avrdeviceexpectedsignature>0x0</avrdeviceexpectedsignature>
+    <avrtoolinterface>JTAG</avrtoolinterface>
+    <com_atmel_avrdbg_tool_jtagice3plus>
+      <ToolOptions>
+        <InterfaceProperties>
+          <JtagDbgClock>7500000</JtagDbgClock>
+        </InterfaceProperties>
+        <InterfaceName>JTAG</InterfaceName>
+      </ToolOptions>
+      <ToolType>com.atmel.avrdbg.tool.jtagice3plus</ToolType>
+      <ToolNumber>J30200006282</ToolNumber>
+      <ToolName>JTAGICE3</ToolName>
+    </com_atmel_avrdbg_tool_jtagice3plus>
+    <avrtoolinterfaceclock>7500000</avrtoolinterfaceclock>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -198,6 +216,7 @@
       <Value>../src/ASF/common/services/usb/class/vendor</Value>
       <Value>../src/ASF/common/services/usb/class/vendor/device</Value>
       <Value>../src/ASF/common/boards/user_board</Value>
+      <Value>../src/ASF/avr32/drivers/pdca</Value>
     </ListValues>
   </avr32gcc.compiler.directories.IncludePaths>
   <avr32gcc.compiler.optimization.level>Optimize for size (-Os)</avr32gcc.compiler.optimization.level>
@@ -247,6 +266,7 @@
       <Value>../src/ASF/common/services/usb/class/vendor</Value>
       <Value>../src/ASF/common/services/usb/class/vendor/device</Value>
       <Value>../src/ASF/common/boards/user_board</Value>
+      <Value>../src/ASF/avr32/drivers/pdca</Value>
     </ListValues>
   </avr32gcc.assembler.general.IncludePaths>
   <avr32gcc.preprocessingassembler.general.AssemblerFlags>-mrelax -DBOARD=USER_BOARD</avr32gcc.preprocessingassembler.general.AssemblerFlags>
@@ -280,6 +300,7 @@
       <Value>../src/ASF/common/services/usb/class/vendor</Value>
       <Value>../src/ASF/common/services/usb/class/vendor/device</Value>
       <Value>../src/ASF/common/boards/user_board</Value>
+      <Value>../src/ASF/avr32/drivers/pdca</Value>
     </ListValues>
   </avr32gcc.preprocessingassembler.general.IncludePaths>
 </Avr32Gcc>
@@ -327,6 +348,7 @@
       <Value>../src/ASF/common/services/usb/class/vendor</Value>
       <Value>../src/ASF/common/services/usb/class/vendor/device</Value>
       <Value>../src/ASF/common/boards/user_board</Value>
+      <Value>../src/ASF/avr32/drivers/pdca</Value>
     </ListValues>
   </avr32gcc.compiler.directories.IncludePaths>
   <avr32gcc.compiler.optimization.level>Optimize (-O1)</avr32gcc.compiler.optimization.level>
@@ -377,6 +399,7 @@
       <Value>../src/ASF/common/services/usb/class/vendor</Value>
       <Value>../src/ASF/common/services/usb/class/vendor/device</Value>
       <Value>../src/ASF/common/boards/user_board</Value>
+      <Value>../src/ASF/avr32/drivers/pdca</Value>
     </ListValues>
   </avr32gcc.assembler.general.IncludePaths>
   <avr32gcc.assembler.debugging.DebugLevel>Default (-g)</avr32gcc.assembler.debugging.DebugLevel>
@@ -411,6 +434,7 @@
       <Value>../src/ASF/common/services/usb/class/vendor</Value>
       <Value>../src/ASF/common/services/usb/class/vendor/device</Value>
       <Value>../src/ASF/common/boards/user_board</Value>
+      <Value>../src/ASF/avr32/drivers/pdca</Value>
     </ListValues>
   </avr32gcc.preprocessingassembler.general.IncludePaths>
   <avr32gcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</avr32gcc.preprocessingassembler.debugging.DebugLevel>
@@ -428,6 +452,7 @@
     <Folder Include="src\ASF\avr32\drivers\flashc\" />
     <Folder Include="src\ASF\avr32\drivers\gpio\" />
     <Folder Include="src\ASF\avr32\drivers\intc\" />
+    <Folder Include="src\ASF\avr32\drivers\pdca\" />
     <Folder Include="src\ASF\avr32\drivers\pm\" />
     <Folder Include="src\ASF\avr32\drivers\pwm\" />
     <Folder Include="src\ASF\avr32\drivers\ssc\" />
@@ -466,6 +491,12 @@
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\avr32\drivers\cpu\cycle_counter\cycle_counter.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\ASF\avr32\drivers\pdca\pdca.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="src\ASF\avr32\drivers\pdca\pdca.h">
       <SubType>compile</SubType>
     </None>
     <Compile Include="src\ASF\avr32\drivers\pwm\pwm.c">
