@@ -42,11 +42,10 @@
     <option id="common.services.basic.clock" value="Add" config="" content-id="Atmel.ASF" />
     <option id="common.services.delay" value="Add" config="" content-id="Atmel.ASF" />
     <option id="common.services.usb.class.device" value="Add" config="vendor_class" content-id="Atmel.ASF" />
+    <option id="avr32.utils.debug" value="Add" config="" content-id="Atmel.ASF" />
     <option id="avr32.drivers.ssc_i2s.example" value="Add" config="" content-id="Atmel.ASF" />
   </options>
   <configurations>
-    <configuration key="config.board.evk1101.init" value="no" default="no" content-id="Atmel.ASF" />
-    <configuration key="config.board.evk1101.led" value="yes" default="yes" content-id="Atmel.ASF" />
     <configuration key="config.avr32.utils.trampoline" value="yes" default="yes" content-id="Atmel.ASF" />
     <configuration key="config.avr32.utils.gccstartup" value="yes" default="yes" content-id="Atmel.ASF" />
     <configuration key="config.utils.interrupt.intc" value="yes" default="yes" content-id="Atmel.ASF" />
@@ -62,9 +61,6 @@
     <configuration key="config.common.services.usb.class.vendor.device.composite" value="disable" default="disable" content-id="Atmel.ASF" />
   </configurations>
   <files>
-    <file path="src/ASF/avr32/boards/evk1101/evk1101.h" framework="" version="" source="avr32/boards/evk1101/evk1101.h" changed="False" content-id="Atmel.ASF" />
-    <file path="src/ASF/avr32/boards/evk1101/led.c" framework="" version="" source="avr32/boards/evk1101/led.c" changed="False" content-id="Atmel.ASF" />
-    <file path="src/ASF/avr32/boards/evk1101/led.h" framework="" version="" source="avr32/boards/evk1101/led.h" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/avr32/drivers/flashc/flashc.c" framework="" version="" source="avr32/drivers/flashc/flashc.c" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/avr32/drivers/flashc/flashc.h" framework="" version="" source="avr32/drivers/flashc/flashc.h" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/avr32/drivers/gpio/gpio.c" framework="" version="" source="avr32/drivers/gpio/gpio.c" changed="False" content-id="Atmel.ASF" />
@@ -140,14 +136,20 @@
     <file path="src/ASF/common/services/usb/class/vendor/device/udi_vendor_desc.c" framework="" version="3.52.0" source="common\services\usb\class\vendor\device\udi_vendor_desc.c" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/common/services/usb/class/vendor/device/udi_vendor.h" framework="" version="3.52.0" source="common\services\usb\class\vendor\device\udi_vendor.h" changed="False" content-id="Atmel.ASF" />
     <file path="src/ASF/common/services/usb/class/vendor/device/udi_vendor_conf.h" framework="" version="3.52.0" source="common\services\usb\class\vendor\device\udi_vendor_conf.h" changed="False" content-id="Atmel.ASF" />
+    <file path="src/ASF/avr32/utils/debug/debug.c" framework="" version="3.52.0" source="avr32\utils\debug\debug.c" changed="False" content-id="Atmel.ASF" />
+    <file path="src/ASF/avr32/utils/debug/debug.h" framework="" version="3.52.0" source="avr32\utils\debug\debug.h" changed="False" content-id="Atmel.ASF" />
+    <file path="src/main.c" framework="" version="" source="common/applications/user_application/main.c" changed="False" content-id="Atmel.ASF" />
+    <file path="src/config/conf_board.h" framework="" version="" source="common/applications/user_application/user_board/config/conf_board.h" changed="False" content-id="Atmel.ASF" />
+    <file path="src/ASF/common/boards/user_board/init.c" framework="" version="" source="common/boards/user_board/init.c" changed="False" content-id="Atmel.ASF" />
+    <file path="src/ASF/common/boards/user_board/user_board.h" framework="" version="" source="common/boards/user_board/user_board.h" changed="False" content-id="Atmel.ASF" />
   </files>
-  <documentation help="https://asf.microchip.com/docs/3.52.0/avr32.drivers.ssc_i2s.example.evk1101/html/index.html" />
+  <documentation help="https://asf.microchip.com/docs/3.52.0/common.applications.user_application.user_board.uc3b/html/index.html" />
   <offline-documentation help="" />
   <dependencies>
     <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.52.0" />
   </dependencies>
-  <project id="avr32.drivers.ssc_i2s.example.evk1101" value="Add" config="" content-id="Atmel.ASF" />
-  <board id="board.evk1101" value="Add" config="" content-id="Atmel.ASF" />
+  <project id="common.applications.user_application.user_board.uc3b" value="Add" config="" content-id="Atmel.ASF" />
+  <board id="board.user_board.uc3b" value="Add" config="" content-id="Atmel.ASF" />
 </framework-data>
     </AsfFrameworkConfig>
     <avrtool />
@@ -195,6 +197,7 @@
       <Value>../src/ASF/common/services/delay</Value>
       <Value>../src/ASF/common/services/usb/class/vendor</Value>
       <Value>../src/ASF/common/services/usb/class/vendor/device</Value>
+      <Value>../src/ASF/common/boards/user_board</Value>
     </ListValues>
   </avr32gcc.compiler.directories.IncludePaths>
   <avr32gcc.compiler.optimization.level>Optimize for size (-Os)</avr32gcc.compiler.optimization.level>
@@ -243,9 +246,10 @@
       <Value>../src/ASF/common/services/delay</Value>
       <Value>../src/ASF/common/services/usb/class/vendor</Value>
       <Value>../src/ASF/common/services/usb/class/vendor/device</Value>
+      <Value>../src/ASF/common/boards/user_board</Value>
     </ListValues>
   </avr32gcc.assembler.general.IncludePaths>
-  <avr32gcc.preprocessingassembler.general.AssemblerFlags>-mrelax -DBOARD=EVK1101 -DUDD_ENABLE</avr32gcc.preprocessingassembler.general.AssemblerFlags>
+  <avr32gcc.preprocessingassembler.general.AssemblerFlags>-mrelax -DBOARD=USER_BOARD</avr32gcc.preprocessingassembler.general.AssemblerFlags>
   <avr32gcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>../src/ASF/avr32/drivers/gpio</Value>
@@ -275,6 +279,7 @@
       <Value>../src/ASF/common/services/delay</Value>
       <Value>../src/ASF/common/services/usb/class/vendor</Value>
       <Value>../src/ASF/common/services/usb/class/vendor/device</Value>
+      <Value>../src/ASF/common/boards/user_board</Value>
     </ListValues>
   </avr32gcc.preprocessingassembler.general.IncludePaths>
 </Avr32Gcc>
@@ -321,6 +326,7 @@
       <Value>../src/ASF/common/services/delay</Value>
       <Value>../src/ASF/common/services/usb/class/vendor</Value>
       <Value>../src/ASF/common/services/usb/class/vendor/device</Value>
+      <Value>../src/ASF/common/boards/user_board</Value>
     </ListValues>
   </avr32gcc.compiler.directories.IncludePaths>
   <avr32gcc.compiler.optimization.level>Optimize (-O1)</avr32gcc.compiler.optimization.level>
@@ -370,10 +376,11 @@
       <Value>../src/ASF/common/services/delay</Value>
       <Value>../src/ASF/common/services/usb/class/vendor</Value>
       <Value>../src/ASF/common/services/usb/class/vendor/device</Value>
+      <Value>../src/ASF/common/boards/user_board</Value>
     </ListValues>
   </avr32gcc.assembler.general.IncludePaths>
   <avr32gcc.assembler.debugging.DebugLevel>Default (-g)</avr32gcc.assembler.debugging.DebugLevel>
-  <avr32gcc.preprocessingassembler.general.AssemblerFlags>-mrelax -DUDD_ENABLE</avr32gcc.preprocessingassembler.general.AssemblerFlags>
+  <avr32gcc.preprocessingassembler.general.AssemblerFlags>-mrelax -DBOARD=USER_BOARD</avr32gcc.preprocessingassembler.general.AssemblerFlags>
   <avr32gcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>../src/ASF/avr32/drivers/gpio</Value>
@@ -403,6 +410,7 @@
       <Value>../src/ASF/common/services/delay</Value>
       <Value>../src/ASF/common/services/usb/class/vendor</Value>
       <Value>../src/ASF/common/services/usb/class/vendor/device</Value>
+      <Value>../src/ASF/common/boards/user_board</Value>
     </ListValues>
   </avr32gcc.preprocessingassembler.general.IncludePaths>
   <avr32gcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</avr32gcc.preprocessingassembler.debugging.DebugLevel>
@@ -434,6 +442,7 @@
     <Folder Include="src\ASF\avr32\utils\startup\" />
     <Folder Include="src\ASF\common\" />
     <Folder Include="src\ASF\common\boards\" />
+    <Folder Include="src\ASF\common\boards\user_board\" />
     <Folder Include="src\ASF\common\services\" />
     <Folder Include="src\ASF\common\services\clock\" />
     <Folder Include="src\ASF\common\services\clock\uc3b0_b1\" />
@@ -475,6 +484,18 @@
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\common\services\usb\class\vendor\usb_protocol_vendor.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\ASF\avr32\utils\debug\debug.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="src\ASF\avr32\utils\debug\debug.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\ASF\common\boards\user_board\init.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="src\ASF\common\boards\user_board\user_board.h">
       <SubType>compile</SubType>
     </None>
     <Compile Include="src\ASF\common\services\usb\class\vendor\device\udi_vendor.c">
@@ -672,6 +693,9 @@
     <Compile Include="src\ASF\avr32\utils\startup\trampoline_uc3.S">
       <SubType>compile</SubType>
     </Compile>
+    <None Include="src\Config\conf_board.h">
+      <SubType>compile</SubType>
+    </None>
     <Compile Include="src\main.c">
       <SubType>compile</SubType>
     </Compile>

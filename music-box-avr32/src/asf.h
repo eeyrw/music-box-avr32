@@ -58,15 +58,18 @@
 // From module: CPU Cycle Counter
 #include <cycle_counter.h>
 
+// From module: Common build items for user board support templates
+#include <user_board.h>
+
 // From module: Compiler abstraction layer and code utilities
 #include <compiler.h>
 #include <status_codes.h>
 
+// From module: Debug macros and functions
+#include <debug.h>
+
 // From module: Delay routines
 #include <delay.h>
-
-// From module: EVK1101
-#include <led.h>
 
 // From module: FLASHC - Flash Controller
 #include <flashc.h>
