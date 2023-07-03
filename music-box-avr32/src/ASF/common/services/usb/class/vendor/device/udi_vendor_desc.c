@@ -1,9 +1,10 @@
 /**
  * \file
  *
- * \brief Descriptors for an USB Composite Device
+ * \brief Default descriptors for a USB Device with a single vendor class
+ * interface
  *
- * Copyright (c) 2009-2018 Microchip Technology Inc. and its subsidiaries.
+ * Copyright (c) 2011-2018 Microchip Technology Inc. and its subsidiaries.
  *
  * \asf_license_start
  *
@@ -37,18 +38,24 @@
 #include "conf_usb.h"
 #include "udd.h"
 #include "udc_desc.h"
+#include "udi_vendor.h"
+
 
 /**
- * \defgroup udi_group_desc Descriptors for a USB Device
- * composite
+ * \defgroup udi_vendor_group_single_desc USB device descriptors for a single interface
  *
+ * The following structures provide the USB device descriptors required for
+ * USB Device with a single interface Vendor Class.
+ *
+ * It is ready to use and do not require more definition.
  * @{
  */
 
-/**INDENT-OFF**/
+//! Only one interface for this device
+#define  USB_DEVICE_NB_INTERFACE       1
 
 //! USB Device Descriptor
-COMPILER_WORD_ALIGNED
+UDC_DATA(4)
 UDC_DESC_STORAGE usb_dev_desc_t udc_device_desc = {
 	.bLength                   = sizeof(usb_dev_desc_t),
 	.bDescriptorType           = USB_DT_DEVICE,
@@ -82,7 +89,7 @@ UDC_DESC_STORAGE usb_dev_desc_t udc_device_desc = {
 
 #ifdef USB_DEVICE_HS_SUPPORT
 //! USB Device Qualifier Descriptor for HS
-COMPILER_WORD_ALIGNED
+UDC_DATA(4)
 UDC_DESC_STORAGE usb_dev_qual_desc_t udc_device_qual = {
 	.bLength                   = sizeof(usb_dev_qual_desc_t),
 	.bDescriptorType           = USB_DT_DEVICE_QUALIFIER,
@@ -99,12 +106,12 @@ UDC_DESC_STORAGE usb_dev_qual_desc_t udc_device_qual = {
 COMPILER_PACK_SET(1)
 typedef struct {
 	usb_conf_desc_t conf;
-	UDI_COMPOSITE_DESC_T;
+	udi_vendor_desc_t udi_vendor;
 } udc_desc_t;
 COMPILER_PACK_RESET()
 
 //! USB Device Configuration Descriptor filled for FS
-COMPILER_WORD_ALIGNED
+UDC_DATA(4)
 UDC_DESC_STORAGE udc_desc_t udc_desc_fs = {
 	.conf.bLength              = sizeof(usb_conf_desc_t),
 	.conf.bDescriptorType      = USB_DT_CONFIGURATION,
@@ -114,12 +121,12 @@ UDC_DESC_STORAGE udc_desc_t udc_desc_fs = {
 	.conf.iConfiguration       = 0,
 	.conf.bmAttributes         = USB_CONFIG_ATTR_MUST_SET | USB_DEVICE_ATTR,
 	.conf.bMaxPower            = USB_CONFIG_MAX_POWER(USB_DEVICE_POWER),
-	UDI_COMPOSITE_DESC_FS
+	.udi_vendor                = UDI_VENDOR_DESC_FS,
 };
 
 #ifdef USB_DEVICE_HS_SUPPORT
 //! USB Device Configuration Descriptor filled for HS
-COMPILER_WORD_ALIGNED
+UDC_DATA(4)
 UDC_DESC_STORAGE udc_desc_t udc_desc_hs = {
 	.conf.bLength              = sizeof(usb_conf_desc_t),
 	.conf.bDescriptorType      = USB_DT_CONFIGURATION,
@@ -129,7 +136,7 @@ UDC_DESC_STORAGE udc_desc_t udc_desc_hs = {
 	.conf.iConfiguration       = 0,
 	.conf.bmAttributes         = USB_CONFIG_ATTR_MUST_SET | USB_DEVICE_ATTR,
 	.conf.bMaxPower            = USB_CONFIG_MAX_POWER(USB_DEVICE_POWER),
-	UDI_COMPOSITE_DESC_HS
+	.udi_vendor                = UDI_VENDOR_DESC_HS,
 };
 #endif
 
@@ -141,7 +148,7 @@ UDC_DESC_STORAGE udc_desc_t udc_desc_hs = {
 
 //! Associate an UDI for each USB interface
 UDC_DESC_STORAGE udi_api_t *udi_apis[USB_DEVICE_NB_INTERFACE] = {
-	UDI_COMPOSITE_API
+	&udi_api_vendor,
 };
 
 //! Add UDI with USB Descriptors FS
@@ -170,5 +177,4 @@ UDC_DESC_STORAGE udc_config_t udc_config = {
 };
 
 //@}
-/**INDENT-ON**/
 //@}

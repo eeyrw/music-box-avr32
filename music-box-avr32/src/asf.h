@@ -55,9 +55,15 @@
 // From module: ADC - Analog to Digital Converter
 #include <adc.h>
 
+// From module: CPU Cycle Counter
+#include <cycle_counter.h>
+
 // From module: Compiler abstraction layer and code utilities
 #include <compiler.h>
 #include <status_codes.h>
+
+// From module: Delay routines
+#include <delay.h>
 
 // From module: EVK1101
 #include <led.h>
@@ -81,6 +87,9 @@
 #include <power_clocks_lib.h>
 #include <sleep.h>
 
+// From module: PWM - UC3 A/B implementation
+#include <pwm.h>
+
 // From module: Part identification macros
 #include <parts.h>
 
@@ -100,23 +109,14 @@
 // From module: USART Debug strings
 #include <print_funcs.h>
 
-// From module: USB CDC Protocol
-#include <usb_protocol_cdc.h>
-
-// From module: USB Device CDC (Composite Device)
-#include <udi_cdc.h>
-
-// From module: USB Device HID Generic (Composite Device)
-#include <udi_hid_generic.h>
-
 // From module: USB Device Stack Core (Common API)
 #include <udc.h>
 #include <udd.h>
 
-// From module: USB HID Device protocol
-#include <usb_protocol_hid.h>
+// From module: USB Device Vendor Class (Single Interface Device)
+#include <udi_vendor.h>
 
-// From module: USB HID Library (Device)
-#include <udi_hid.h>
+// From module: USB Vendor Protocol
+#include <usb_protocol_vendor.h>
 
 #endif // ASF_H

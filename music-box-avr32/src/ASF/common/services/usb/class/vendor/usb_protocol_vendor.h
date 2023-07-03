@@ -1,9 +1,9 @@
 /**
  * \file
  *
- * \brief USB Device Human Interface Device (HID) interface definitions.
+ * \brief USB Vendor class protocol definitions.
  *
- * Copyright (c) 2009-2018 Microchip Technology Inc. and its subsidiaries.
+ * Copyright (c) 2014-2018 Microchip Technology Inc. and its subsidiaries.
  *
  * \asf_license_start
  *
@@ -34,42 +34,26 @@
  * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip Support</a>
  */
 
-#ifndef _UDI_HID_H_
-#define _UDI_HID_H_
-
-#include "conf_usb.h"
-#include "usb_protocol.h"
-#include "usb_protocol_hid.h"
-#include "udd.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef _USB_PROTOCOL_VENDOR_H_
+#define _USB_PROTOCOL_VENDOR_H_
 
 /**
- * \ingroup udi_group
- * \defgroup udi_hid_group USB Device Interface (UDI) for Human Interface Device (HID)
- *
- * Common library for all Human Interface Device (HID) implementation.
+ * \ingroup usb_protocol_group
+ * \defgroup usb_vendor_protocol USB Vendor Class definitions
  *
  * @{
  */
 
 /**
- * \brief Decode HID setup request
- *
- * \param rate         Pointer on rate of current HID interface
- * \param protocol     Pointer on protocol of current HID interface
- * \param report_desc  Pointer on report descriptor of current HID interface
- * \param set_report   Pointer on set_report callback of current HID interface
- *
- * \return \c 1 if function was successfully done, otherwise \c 0.
+ * \name Vendor class values
  */
-bool udi_hid_setup( uint8_t *rate, uint8_t *protocol, uint8_t *report_desc, bool (*setup_report)(void) );
+//@{
+#define  VENDOR_CLASS                  0xFF
+#define  VENDOR_SUBCLASS               0xFF
+#define  VENDOR_PROTOCOL               0xFF
+//@}
+
 
 //@}
 
-#ifdef __cplusplus
-}
-#endif
-#endif // _UDI_HID_H_
+#endif // _USB_PROTOCOL_VENDOR_H_
