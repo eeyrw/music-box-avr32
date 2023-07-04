@@ -1,4 +1,4 @@
-#include <xc.h>
+#include <avr32/io.h>
 #include "WaveTable.h"
 
 
@@ -48,91 +48,78 @@
 .equ pVolume,pLastSoundUnit+4
 
 .section .text
-.ent SynthAsm
 SynthAsm:
-#define pSoundUnit t1
-#define loopIndex t2
-#define mixOut t3
-#define USE_MADD
+#define pSoundUnit r8
+#define loopIndex r9
+#define mixOut r10
 #define USE_Interpolation
+pushm	r4-r7,lr
+mov loopIndex, POLY_NUM
 
-li loopIndex, POLY_NUM
+mov mixOut, 0
+mov pSoundUnit,r12
 
-move mixOut, zero
-move pSoundUnit,a0
-
-#ifdef USE_MADD
-mtlo zero
-mthi zero
-#endif
 
 loopSynth:
-    lw t4,pEnvelopeLevel(pSoundUnit)
-    beqz t4,loopSynthEnd
-    lw t5,pWaveTableAddress(pSoundUnit)
-    lw t6,pWavetablePos(pSoundUnit)
-    srl  t6,t6,8 //wavetablePos /= 256
-    sll  t6,t6,1 //wavetablePos *= 2
-    add t6,t5,t6  // Load signed 16bit sample to t6
+    ld.w r5,pSoundUnit[pEnvelopeLevel]
+	cp.w r5,0
+    breq loopSynthEnd
+    ld.w r5,pSoundUnit[pWaveTableAddress]
+    ld.w r6,pSoundUnit[pWavetablePos]
+    asr  r6,8 //wavetablePos /= 256
+    lsl  r6,1 //wavetablePos *= 2
+    add r6,r5  // Load signed 16bit sample to t6
     #ifdef USE_Interpolation
-    addi t7,t6,2    // Load 2nd signed 16bit sampleaddr
+	mov r7,2
+    add r6,r7    // Load 2nd signed 16bit sampleaddr
     #endif
-    lh t6,(t6)
+    ld.sh r6,r6
     #ifdef USE_Interpolation 
-    lh t7,(t7)
-    sub t7,t7,t6
-    lbu t5,pWavetablePos(pSoundUnit)
-    mflo mixOut
+    ld.sh r7,r7
+    sub r7,r6
+    ld.ub r5,pSoundUnit[pWavetablePos]
     mul t7,t7,t5
-    mtlo mixOut
-    sra  t7,t7,8 //wavetablePos /= 256
+    asr r7,8 //wavetablePos /= 256
     add t6,t6,t7
     #endif
-    sw t6,pSampleVal(pSoundUnit)
+    st.w pSoundUnit[pSampleVal],r6
  
-    #ifdef USE_MADD
-    madd t4,t6
-    #else
-    mul t4,t6,t4 //sample*envelope
-    // sra t4,t4,8
-    sw t4,pVal(pSoundUnit)
-    add mixOut,t4,mixOut //mixOut+=sample*envelope
-    #endif
-    
-    lw t6,pWavetablePos(pSoundUnit)
-    lw t5,pIncrement(pSoundUnit)
-    add t6,t5,t6
-    lw t5,pWaveTableLen(pSoundUnit)
-    sll t5,t5,8 //pWaveTableLen*=256    
-    bgeu t5,t6,wavePosUpdateEnd  //bgeu:">="
-    lw t5,pWaveTableLoopLen(pSoundUnit)
-    sll t5,t5,8 //waveTableLoopLen*=256
-    sub t6,t6,t5
+    mac mixOut,r4,r6
+    //sw t4,pVal(pSoundUnit)
+   
+    ld.w r6,pSoundUnit[pWavetablePos]
+    ld.w r5,pSoundUnit[pIncrement]
+    add r6,r5
+    ld.w r5,pSoundUnit[pWaveTableLen]
+    asr  r5,8 //wavetablePos /= 256 //pWaveTableLen*=256    
+	cp.w r5,r6
+    brge wavePosUpdateEnd  //bgeu:">="
+    ld.w r5,pSoundUnit[pWaveTableLoopLen]
+    lsr r5,8 //waveTableLoopLen*=256
+    sub r6,r5
     wavePosUpdateEnd:
-    sw t6,pWavetablePos(pSoundUnit)
+    st.w pSoundUnit[pWavetablePos],r6
 loopSynthEnd:
 
-addi loopIndex,loopIndex,-1 // set n = n-1
-addi pSoundUnit,pSoundUnit,SoundUnitSize
-bnez loopIndex,loopSynth
+sub loopIndex,1 // set n = n-1
+sub pSoundUnit,-SoundUnitSize
+cp.w loopIndex,0
+brne loopSynth
 
-#ifdef USE_MADD
-mflo mixOut
-#endif
-sra mixOut,mixOut,8 // mixOut/=255 ( envelope)
+asr mixOut,8 // mixOut/=255 ( envelope)
 
 
-li t5,100
-mul mixOut,t5,mixOut //pre vol
-sra mixOut,mixOut,8
+mov r5,100
+mul mixOut,r5 //pre vol
+asr mixOut,8
 
 
 
-move pSoundUnit,a0
+mov pSoundUnit,r12
 
-lh t6,pVolume(pSoundUnit)
-mul mixOut,t6,mixOut //main vol
-sra mixOut,mixOut,10
+ld.uh r6,pSoundUnit[pVolume]
+mul mixOut,r6 //main vol
+asr mixOut,10
 
 
 
@@ -146,19 +133,18 @@ ble mixOut,t5,saturateEnd
 move mixOut,t5
 saturateEnd:
 */
-sw mixOut,pMixOut(pSoundUnit)
+sw mixOut,pSoundUnit[pMixOut]
 
 
-jr ra
+ldm	sp++,r4-r7,pc
 .end SynthAsm
 
-.ent GenDecayEnvlopeAsm
 GenDecayEnvlopeAsm:
-#define pSoundUnitGenEnv t1
-#define loopIndexGenEnv t2
+#define pSoundUnitGenEnv r8
+#define loopIndexGenEnv r9
 
-move pSoundUnitGenEnv,a0
-li loopIndexGenEnv,POLY_NUM
+mov pSoundUnitGenEnv,r12
+mov loopIndexGenEnv,POLY_NUM
 loopGenDecayEnvlope:
 // void GenDecayEnvlopeC(Synthesizer* synth)
 // {
@@ -193,7 +179,6 @@ bnez loopIndexGenEnv,loopGenDecayEnvlope
 jr ra
 .end GenDecayEnvlopeAsm
 
-.ent NoteOnAsm
 NoteOnAsm:
 #define pSynth t4
 #define note a1
