@@ -166,7 +166,7 @@ int ssc_i2s_init(volatile avr32_ssc_t *ssc,
     // SSC_I2S_MODE_STEREO_IN,
     // SSC_I2S_MODE_STEREO_OUT_STEREO_IN
 
-    long txen_mask = 0x00000000,
+    unsigned long txen_mask = 0x00000000,
                   rxen_mask = 0x00000000;
 
     if (mode != SSC_I2S_MODE_STEREO_OUT_EXT_CLK)
