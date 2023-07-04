@@ -3,13 +3,10 @@
 #include <asf.h>
 
 
+#define AUDIO_BUFFER_SIZE 512
 
-/* Connection of the light sensor */
-#define EXAMPLE_ADC_LIGHT_CHANNEL           0
-#define EXAMPLE_ADC_LIGHT_PIN               AVR32_ADC_AD_0_PIN
-#define EXAMPLE_ADC_LIGHT_FUNCTION          AVR32_ADC_AD_0_FUNCTION
-
-uint8_t AudioBuffer[1024];
+int16_t AudioBuffer[AUDIO_BUFFER_SIZE*2];
+volatile uint32_t BufferToggle;
 
 
 /** \brief Main application entry point - init and loop to display ADC values */
@@ -17,7 +14,7 @@ void ADCInit(void)
 {
 	/** GPIO pin/adc-function map. */
 	const gpio_map_t ADC_GPIO_MAP = {
-		{EXAMPLE_ADC_LIGHT_PIN, EXAMPLE_ADC_LIGHT_FUNCTION}
+		{AVR32_ADC_AD_0_PIN, AVR32_ADC_AD_0_FUNCTION}
 	};
 
 	/* Assign and enable GPIO pins to the ADC function. */
@@ -30,24 +27,21 @@ void ADCInit(void)
 	*  usually lower; cf. the ADC Characteristic section in the datasheet). */
 	AVR32_ADC.mr |= 0x1 << AVR32_ADC_MR_PRESCAL_OFFSET;
 	adc_configure(&AVR32_ADC);
-
-	/* Enable the ADC channels. */
-	adc_enable(&AVR32_ADC, EXAMPLE_ADC_LIGHT_CHANNEL);
-
 }
 
-int16_t ReadADC(void)
+int16_t ReadADC(uint16_t chn)
 {
 	signed short adc_value_light = -1;
+	
+	if (adc_get_status(&AVR32_ADC, chn) == false)
+		adc_enable(&AVR32_ADC,chn);
 	/* Start conversions on all enabled channels */
 	adc_start(&AVR32_ADC);
 
 
 	/* Get value for the light adc channel */
-	adc_value_light = adc_get_value(&AVR32_ADC,
-	EXAMPLE_ADC_LIGHT_CHANNEL);
+	adc_value_light = adc_get_value(&AVR32_ADC,chn);
 	return adc_value_light;
-	
 }
 
 
@@ -78,7 +72,7 @@ void PwmLedInit(void)
 	* (115200/256)/20 == 22.5Hz == (MCK/prescaler)/period, with
 	* MCK == 115200Hz, prescaler == 256, period == 20. */
 	pwm_channel.cdty = 90; /* Channel duty cycle, should be < CPRD. */
-	pwm_channel.cprd = 1<<12-1; /* Channel period. */
+	pwm_channel.cprd = 1023; /* Channel period. */
 	pwm_channel.cupd = 0; /* Channel update is not used here. */
 	pwm_channel.CMR.calg = PWM_MODE_LEFT_ALIGNED; /* Channel mode. */
 	pwm_channel.CMR.cpol = PWM_POLARITY_HIGH;      /* Channel polarity. */
@@ -100,10 +94,22 @@ ISR(pdca_int_handler, AVR32_PDCA_IRQ_GROUP0, 0)
 ISR(pdca_int_handler, AVR32_PDCA_IRQ_GROUP, 0)
 #endif
 {
+	if(BufferToggle)
+	{
+		pdca_reload_channel(0,
+		(void *)AudioBuffer, AUDIO_BUFFER_SIZE);
+		BufferToggle = 0;
+	}else
+	{
+		pdca_reload_channel(0,
+		(void *)(AudioBuffer+AUDIO_BUFFER_SIZE), AUDIO_BUFFER_SIZE);
+		BufferToggle = 1;
+	}
+}
 
-	pdca_reload_channel(0,
-	(void *)AudioBuffer, sizeof(AudioBuffer));
-
+void CodecInit(void)
+{
+	gpio_set_pin_high(CODEC_SD_PIN);
 }
 
 void SSCInit(void)
@@ -126,24 +132,25 @@ void SSCInit(void)
 		/* Select peripheral - data is transmitted on USART TX line */
 		.pid = AVR32_PDCA_PID_SSC_TX,
 		/* Select size of the transfer */
-		.transfer_size = PDCA_TRANSFER_SIZE_BYTE,
+		.transfer_size = PDCA_TRANSFER_SIZE_HALF_WORD,
 
 		/* Memory address */
 		.addr = (void *)AudioBuffer,
 		/* Transfer counter */
-		.size = sizeof(AudioBuffer),
+		.size = AUDIO_BUFFER_SIZE,
 
 		/* Next memory address */
 		.r_addr = NULL,
 		/* Next transfer counter */
 		.r_size = 0,
 	};
+	
+	BufferToggle = 0;
 
 	/* Initialize the PDCA channel with the requested options. */
 	pdca_init_channel(0, &PDCA_OPTIONS);
 	
 	/* Register PDCA IRQ interrupt. */
-	pdca_enable_interrupt_transfer_complete(0);
 	/* Enable PDCA interrupt each time the reload counter reaches zero, i.e.
 	* each time half of the ASCII animation (either anim1 or anim2) is
 	* transferred. */
@@ -165,6 +172,7 @@ int main(void)
 	ADCInit();
 	SSCInit();
 	init_dbg_rs232(sysclk_get_pba_hz());
+	CodecInit();
 
 	cpu_irq_disable();		// Initialize interrupt vectors.
 	INTC_init_interrupts();
@@ -179,7 +187,7 @@ int main(void)
 
 	while (1)
 	{
-		int16_t adcV = ReadADC();
+		int16_t adcV = ReadADC(0);
 		AVR32_PWM.channel[0].cupd = adcV;
 	}
 }

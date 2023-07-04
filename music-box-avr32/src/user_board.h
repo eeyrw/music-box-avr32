@@ -72,44 +72,6 @@
 #define DBG_USART_BAUDRATE      57600
 
 
-//! Number of LEDs.
-#define LED_COUNT   4
-
-/*! \name GPIO Connections of LEDs
- */
-//! @{
-#define LED0_GPIO   AVR32_PIN_PA07
-#define LED1_GPIO   AVR32_PIN_PA08
-#define LED2_GPIO   AVR32_PIN_PA21
-#define LED3_GPIO   AVR32_PIN_PA22
-//! @}
-
-/*! \name PWM Channels of LEDs
- */
-//! @{
-#define LED0_PWM    0
-#define LED1_PWM    1
-#define LED2_PWM    2
-#define LED3_PWM    6
-//! @}
-
-/*! \name PWM Functions of LEDs
- */
-//! @{
-#define LED0_PWM_FUNCTION   AVR32_PWM_0_0_FUNCTION
-#define LED1_PWM_FUNCTION   AVR32_PWM_1_0_FUNCTION
-#define LED2_PWM_FUNCTION   AVR32_PWM_2_0_FUNCTION
-#define LED3_PWM_FUNCTION   AVR32_PWM_6_0_FUNCTION
-//! @}
-
-/*! \name Color Identifiers of LEDs to Use with LED Functions
- */
-//! @{
-#define LED_MONO0_GREEN   LED0
-#define LED_MONO1_GREEN   LED1
-#define LED_MONO2_GREEN   LED2
-#define LED_MONO3_GREEN   LED3
-//! @}
 
 
 /*! \name GPIO Connections of Push Buttons
@@ -122,53 +84,7 @@
 //! @}
 
 
-/*! \name GPIO Connections of the Joystick
- */
-//! @{
-#define GPIO_JOYSTICK_PUSH            AVR32_PIN_PA13
-#define GPIO_JOYSTICK_PUSH_PRESSED    0
-#define GPIO_JOYSTICK_LEFT            AVR32_PIN_PB06
-#define GPIO_JOYSTICK_LEFT_PRESSED    0
-#define GPIO_JOYSTICK_RIGHT           AVR32_PIN_PB09
-#define GPIO_JOYSTICK_RIGHT_PRESSED   0
-#define GPIO_JOYSTICK_UP              AVR32_PIN_PB07
-#define GPIO_JOYSTICK_UP_PRESSED      0
-#define GPIO_JOYSTICK_DOWN            AVR32_PIN_PB08
-#define GPIO_JOYSTICK_DOWN_PRESSED    0
-//! @}
 
-
-/*! \name ADC Connection of the Temperature Sensor
- */
-//! @{
-#define ADC_TEMPERATURE_CHANNEL     7
-#define ADC_TEMPERATURE_PIN         AVR32_ADC_AD_7_PIN
-#define ADC_TEMPERATURE_FUNCTION    AVR32_ADC_AD_7_FUNCTION
-//! @}
-
-
-/*! \name ADC Connection of the Light Sensor
- */
-//! @{
-#define ADC_LIGHT_CHANNEL           6
-#define ADC_LIGHT_PIN               AVR32_ADC_AD_6_PIN
-#define ADC_LIGHT_FUNCTION          AVR32_ADC_AD_6_FUNCTION
-//! @}
-
-
-/*! \name ADC Connections of the Accelerometer
- */
-//! @{
-#define ADC_ACC_X_CHANNEL           1
-#define ADC_ACC_X_PIN               AVR32_ADC_AD_1_PIN
-#define ADC_ACC_X_FUNCTION          AVR32_ADC_AD_1_FUNCTION
-#define ADC_ACC_Y_CHANNEL           2
-#define ADC_ACC_Y_PIN               AVR32_ADC_AD_2_PIN
-#define ADC_ACC_Y_FUNCTION          AVR32_ADC_AD_2_FUNCTION
-#define ADC_ACC_Z_CHANNEL           3
-#define ADC_ACC_Z_PIN               AVR32_ADC_AD_3_PIN
-#define ADC_ACC_Z_FUNCTION          AVR32_ADC_AD_3_FUNCTION
-//! @}
 
 
 /*! \name PWM Connections of Audio
@@ -182,6 +98,9 @@
 #define AUDIO_HIGH_PWM_FUNCTION     AVR32_PWM_6_1_FUNCTION
 //! @}
 
+
+
+#define CODEC_SD_PIN				AVR32_PIN_PB04
 
 /*! \name SPI Connections of the AT45DBX Data Flash Memory
  */
