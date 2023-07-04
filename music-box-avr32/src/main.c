@@ -1,12 +1,14 @@
 #include <avr32/io.h>
 #include <stdio.h>
 #include <asf.h>
-
+#include "SynthCore.h"
 
 #define AUDIO_BUFFER_SIZE 512
 
 int16_t AudioBuffer[AUDIO_BUFFER_SIZE*2];
 volatile uint32_t BufferToggle;
+
+volatile Synthesizer mainSynth;
 
 
 /** \brief Main application entry point - init and loop to display ADC values */
@@ -109,12 +111,11 @@ ISR(pdca_int_handler, AVR32_PDCA_IRQ_GROUP, 0)
 
 void CodecInit(void)
 {
-	gpio_set_pin_high(CODEC_SD_PIN);
+	gpio_set_gpio_pin(CODEC_SD_PIN);
 }
 
 void SSCInit(void)
 {
-	volatile avr32_ssc_t *ssc = &AVR32_SSC;
 	static const gpio_map_t SSC_GPIO_MAP =
 	{
 		{AVR32_SSC_TX_CLOCK_0_0_PIN,      AVR32_SSC_TX_CLOCK_0_0_FUNCTION     },
@@ -125,8 +126,7 @@ void SSCInit(void)
 	gpio_enable_module(SSC_GPIO_MAP, sizeof(SSC_GPIO_MAP) / sizeof(SSC_GPIO_MAP[0]));
 
 	// SSC init in I2S mode.
-	ssc_i2s_init(ssc, 32000, 16, 32, SSC_I2S_MODE_STEREO_OUT, sysclk_get_pba_hz());
-	// ssc_i2s_enable_interrupts(ssc,AVR32_SSC_IER_TXEMPTY);
+	ssc_i2s_init(&AVR32_SSC, 32000, 16, 16, SSC_I2S_MODE_STEREO_OUT, sysclk_get_pba_hz());
 	
 	const pdca_channel_options_t PDCA_OPTIONS = {
 		/* Select peripheral - data is transmitted on USART TX line */
@@ -181,12 +181,16 @@ int main(void)
 
 	cpu_irq_enable();	udc_start();	udc_attach();
 
-
+	GenDecayEnvlopeAsm(&mainSynth);
 	
 	printf("Debug uart is working!");
 
 	while (1)
 	{
+		for (int i=0;i<AUDIO_BUFFER_SIZE*2;i++)
+		{
+			AudioBuffer[i] = (ReadADC(0)&0x01)<<10;
+		}
 		int16_t adcV = ReadADC(0);
 		AVR32_PWM.channel[0].cupd = adcV;
 	}

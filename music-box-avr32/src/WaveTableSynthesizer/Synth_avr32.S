@@ -78,9 +78,9 @@ loopSynth:
     ld.sh r7,r7
     sub r7,r6
     ld.ub r5,pSoundUnit[pWavetablePos]
-    mul t7,t7,t5
+    mul r7,r5
     asr r7,8 //wavetablePos /= 256
-    add t6,t6,t7
+    add r6,r7
     #endif
     st.w pSoundUnit[pSampleVal],r6
  
@@ -93,7 +93,7 @@ loopSynth:
     ld.w r5,pSoundUnit[pWaveTableLen]
     asr  r5,8 //wavetablePos /= 256 //pWaveTableLen*=256    
 	cp.w r5,r6
-    brge wavePosUpdateEnd  //bgeu:">="
+    brhs wavePosUpdateEnd  //brhs:">="
     ld.w r5,pSoundUnit[pWaveTableLoopLen]
     lsr r5,8 //waveTableLoopLen*=256
     sub r6,r5
@@ -133,16 +133,14 @@ ble mixOut,t5,saturateEnd
 move mixOut,t5
 saturateEnd:
 */
-sw mixOut,pSoundUnit[pMixOut]
-
-
+st.w pSoundUnit[pMixOut],mixOut
 ldm	sp++,r4-r7,pc
-.end SynthAsm
+
 
 GenDecayEnvlopeAsm:
 #define pSoundUnitGenEnv r8
 #define loopIndexGenEnv r9
-
+pushm	r4-r7,lr
 mov pSoundUnitGenEnv,r12
 mov loopIndexGenEnv,POLY_NUM
 loopGenDecayEnvlope:
@@ -159,30 +157,34 @@ loopGenDecayEnvlope:
 //         }
 //     }
 // }
-    lw t5,pWavetablePos(pSoundUnitGenEnv)
-    lw t6,pWaveTableAttackLen(pSoundUnitGenEnv)
-    sll t6,t6,8
-    bltu t5,t6,conditionEnd // blt:"<"
-    lw t5,pEnvelopePos(pSoundUnitGenEnv)
-    li t6,(ENVELOP_LEN-1)
-    bgeu t5,t6,conditionEnd // bhs Higher or same (unsigned >= )
-    la t6,EnvelopeTable
-    add t6,t5,t6
-    lbu t6,(t6)   // Load envelope to r6
-    sw t6,pEnvelopeLevel(pSoundUnitGenEnv)
-    addi t5,t5,1
-    sw t5,pEnvelopePos(pSoundUnitGenEnv)
+    ld.w r5,pSoundUnitGenEnv[pWavetablePos]
+    ld.w r6,pSoundUnitGenEnv[pWaveTableAttackLen]
+    lsl r6,8
+	cp.w r5,r6
+    brlo conditionEnd // brlo: unsigned"<"
+    ld.w r5,pSoundUnitGenEnv[pEnvelopePos]
+    mov r6,(ENVELOP_LEN-1)
+	cp.w r5,r6
+    brhs conditionEnd // bhs Higher or same (unsigned >= )
+	lda.w r5,EnvelopeTable
+    add r6,r5
+    ld.ub r6,r6   // Load envelope to r6
+    st.w pSoundUnitGenEnv[pEnvelopeLevel],r6
+    sub r5,-1
+	st.w pSoundUnitGenEnv[pEnvelopePos],r5
     conditionEnd:
-addi loopIndexGenEnv,loopIndexGenEnv,-1 // set n = n-1
-addi pSoundUnitGenEnv,pSoundUnitGenEnv,SoundUnitSize
-bnez loopIndexGenEnv,loopGenDecayEnvlope
-jr ra
-.end GenDecayEnvlopeAsm
+sub loopIndexGenEnv,1 // set n = n-1
+sub pSoundUnitGenEnv,-SoundUnitSize
+cp.w loopIndexGenEnv,0
+brne loopGenDecayEnvlope
+ldm	sp++,r4-r7,pc
+
 
 NoteOnAsm:
-#define pSynth t4
-#define note a1
-move pSynth,a0
+#define pSynth r10
+#define note r11
+ldm	sp++,r4-r7,pc
+mov pSynth,r12
 // void NoteOnC(Synthesizer* synth,uint8_t note)
 // {
 //     uint8_t lastSoundUnit = synth->lastSoundUnit//
@@ -204,49 +206,51 @@ move pSynth,a0
 //     synth->lastSoundUnit=lastSoundUnit//
 // }
 
-lw t5,pLastSoundUnit(pSynth)
+ld.w r5,pSynth[pLastSoundUnit]
 
-li t6,SoundUnitSize
-mul t5,t5,t6
-add pSynth,pSynth,t5
-li t5,0x7F
-and note,note,t5
-sll note,note,1
-la t5,WaveTable_Increment
-add t5,t5,note
-lhu t5,(t5)
+mov r6,SoundUnitSize
+mul r5,r6
+add pSynth,r5
+mov r5,0x7F
+and note,r5
+lsl note,1
+lda.w r5,WaveTable_Increment
+add r5,note
+ld.ub r5,r5
 
 // Disable all interrupt
-di
+ssrf	0x10
 
-sw t5,pIncrement(pSynth)
-move t5,zero
-sw t5,pWavetablePos(pSynth)
-la t5,WaveTable
-sw t5,pWaveTableAddress(pSynth)
-li t5,WAVETABLE_LEN
-sw t5,pWaveTableLen(pSynth)
-li t5,WAVETABLE_LOOP_LEN
-sw t5,pWaveTableLoopLen(pSynth)
-li t5,WAVETABLE_ATTACK_LEN
-sw t5,pWaveTableAttackLen(pSynth)
-sw zero,pEnvelopePos(pSynth)
-li t5,255
-sw t5,pEnvelopeLevel(pSynth)
+st.w pSynth[pIncrement],r5
+mov r5,0
+st.w pSynth[pWavetablePos],r5
+lda.w r5,WaveTable
+st.w pSynth[pWaveTableAddress],r5
+mov r5,WAVETABLE_LEN
+st.w pSynth[pWaveTableLen],r5
+mov r5,WAVETABLE_LOOP_LEN
+st.w pSynth[pWaveTableLoopLen],r5
+mov r5,WAVETABLE_ATTACK_LEN
+st.w pSynth[pWaveTableAttackLen],r5
+mov r5,0
+st.w pSynth[pEnvelopePos],r5
+mov r5,255
+st.w pSynth[pEnvelopeLevel],r5
 
 // Enable all interrupt
-ei
+csrf	0x10
 
-move pSynth,a0
+mov pSynth,r12
 
-lw t5,pLastSoundUnit(pSynth)
+ld.w r5,pSynth[pLastSoundUnit]
 
-addi t5,t5,1
-addi t6,t5,-POLY_NUM
-bnez t6,updateLastSoundUnitEnd
-move t5,zero
+sub r5,-1
+sub r6,r5,POLY_NUM
+cp.w r6,0
+brne updateLastSoundUnitEnd
+mov r5,0
 updateLastSoundUnitEnd:
-sw t5,pLastSoundUnit(pSynth)
+st.w pSynth[pLastSoundUnit],r5
 
-jr ra
-.end NoteOnAsm
+ldm	sp++,r4-r7,pc
+.end
