@@ -39,7 +39,6 @@ void PlayerProcess(Player *player)
                 }
                 else
                 {
-                   // NoteOnAsm(&(player->mainSynthesizer), temp);
                     NoteOnAsm(&(player->mainSynthesizer), temp);
                 }
             } while ((temp & 0x80) == 0);

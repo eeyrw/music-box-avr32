@@ -61,8 +61,8 @@ mov pSoundUnit,r12
 
 
 loopSynth:
-    ld.w r5,pSoundUnit[pEnvelopeLevel]
-	cp.w r5,0
+    ld.w r4,pSoundUnit[pEnvelopeLevel]
+	cp.w r4,0
     breq loopSynthEnd
     ld.w r5,pSoundUnit[pWaveTableAddress]
     ld.w r6,pSoundUnit[pWavetablePos]
@@ -71,13 +71,13 @@ loopSynth:
     add r6,r5  // Load signed 16bit sample to t6
     #ifdef USE_Interpolation
 	mov r7,2
-    add r6,r7    // Load 2nd signed 16bit sampleaddr
+    add r7,r6    // Load 2nd signed 16bit sampleaddr
     #endif
     ld.sh r6,r6
     #ifdef USE_Interpolation 
     ld.sh r7,r7
     sub r7,r6
-    ld.ub r5,pSoundUnit[pWavetablePos]
+    ld.ub r5,pSoundUnit[pWavetablePos+3] //AVR32 is big endian
     mul r7,r5
     asr r7,8 //wavetablePos /= 256
     add r6,r7
@@ -91,11 +91,11 @@ loopSynth:
     ld.w r5,pSoundUnit[pIncrement]
     add r6,r5
     ld.w r5,pSoundUnit[pWaveTableLen]
-    asr  r5,8 //wavetablePos /= 256 //pWaveTableLen*=256    
+    lsl  r5,8 //pWaveTableLen*=256    
 	cp.w r5,r6
     brhs wavePosUpdateEnd  //brhs:">="
     ld.w r5,pSoundUnit[pWaveTableLoopLen]
-    lsr r5,8 //waveTableLoopLen*=256
+    lsl r5,8 //waveTableLoopLen*=256
     sub r6,r5
     wavePosUpdateEnd:
     st.w pSoundUnit[pWavetablePos],r6
@@ -155,7 +155,7 @@ loopGenDecayEnvlope:
     mov r6,(ENVELOP_LEN-1)
 	cp.w r5,r6
     brhs conditionEnd // bhs Higher or same (unsigned >= )
-	lda.w r5,EnvelopeTable
+	lda.w r6,EnvelopeTable
     add r6,r5
     ld.ub r6,r6   // Load envelope to r6
     st.w pSoundUnitGenEnv[pEnvelopeLevel],r6
@@ -172,7 +172,7 @@ ldm	sp++,r4-r7,pc
 NoteOnAsm:
 #define pSynth r10
 #define note r11
-ldm	sp++,r4-r7,pc
+pushm	r4-r7,lr
 mov pSynth,r12
 // void NoteOnC(Synthesizer* synth,uint8_t note)
 // {
@@ -205,7 +205,7 @@ and note,r5
 lsl note,1
 lda.w r5,WaveTable_Increment
 add r5,note
-ld.ub r5,r5
+ld.uh r5,r5
 
 // Disable all interrupt
 ssrf	0x10
@@ -234,7 +234,7 @@ mov pSynth,r12
 ld.w r5,pSynth[pLastSoundUnit]
 
 sub r5,-1
-cp.w r6,POLY_NUM
+cp.w r5,POLY_NUM
 brne updateLastSoundUnitEnd
 mov r5,0
 updateLastSoundUnitEnd:

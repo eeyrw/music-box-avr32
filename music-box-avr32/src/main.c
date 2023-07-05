@@ -207,7 +207,7 @@ int main(void)
 	INTC_register_interrupt(&pdca_int_handler, AVR32_PDCA_IRQ_0,
 	AVR32_INTC_INT0);
 
-	cpu_irq_enable();	udc_start();	udc_attach();
+	cpu_irq_enable();	//udc_start();	//udc_attach();
 
     PlayerInit(&mPlayer);
     PlayerPlay(&mPlayer);
