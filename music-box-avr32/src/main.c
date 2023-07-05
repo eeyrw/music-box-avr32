@@ -1,7 +1,8 @@
 #include <avr32/io.h>
 #include <stdio.h>
 #include <asf.h>
-#include "SynthCore.h"
+#include "Player.h"
+Player mPlayer;
 
 #define AUDIO_BUFFER_SIZE 512
 
@@ -9,6 +10,7 @@ int16_t AudioBuffer[AUDIO_BUFFER_SIZE*2];
 volatile uint32_t BufferToggle;
 
 volatile Synthesizer mainSynth;
+void synth_wave(short *buffer_pp, int len);
 
 
 /** \brief Main application entry point - init and loop to display ADC values */
@@ -101,10 +103,12 @@ ISR(pdca_int_handler, AVR32_PDCA_IRQ_GROUP, 0)
 		pdca_reload_channel(0,
 		(void *)AudioBuffer, AUDIO_BUFFER_SIZE);
 		BufferToggle = 0;
+		synth_wave((void *)(AudioBuffer+AUDIO_BUFFER_SIZE), AUDIO_BUFFER_SIZE);
 	}else
 	{
 		pdca_reload_channel(0,
 		(void *)(AudioBuffer+AUDIO_BUFFER_SIZE), AUDIO_BUFFER_SIZE);
+		synth_wave((void *)(AudioBuffer), AUDIO_BUFFER_SIZE);
 		BufferToggle = 1;
 	}
 }
@@ -162,6 +166,30 @@ void SSCInit(void)
 	
 }
 
+void synth_wave(short *buffer_pp, int len)
+{
+
+
+	for (int i = 0; i < len; i += 2)
+	{
+		Player32kProc(&mPlayer);
+
+
+		int32_t rawSynthOutput = mPlayer.mainSynthesizer.mixOut;
+		//if (rawSynthOutput < -32768)
+		//{
+			//rawSynthOutput = -32768;
+		//}
+		//else if (rawSynthOutput > 32767)
+		//{
+			//rawSynthOutput = 32767;
+		//}
+		
+		buffer_pp[i] = rawSynthOutput;
+		buffer_pp[i + 1] = rawSynthOutput;
+	}
+}
+
 /*! \brief Main function, application starts executing here after
 *         initializing the stack pointer.
 */
@@ -181,17 +209,16 @@ int main(void)
 
 	cpu_irq_enable();	udc_start();	udc_attach();
 
-	GenDecayEnvlopeAsm(&mainSynth);
+    PlayerInit(&mPlayer);
+    PlayerPlay(&mPlayer);
 	
 	printf("Debug uart is working!");
 
 	while (1)
 	{
-		for (int i=0;i<AUDIO_BUFFER_SIZE*2;i++)
-		{
-			AudioBuffer[i] = (ReadADC(0)&0x01)<<10;
-		}
-		int16_t adcV = ReadADC(0);
-		AVR32_PWM.channel[0].cupd = adcV;
+
+        PlayerProcess(&mPlayer);
+		mPlayer.mainSynthesizer.volume = ReadADC(0);
+		//AVR32_PWM.channel[0].cupd = adcV;
 	}
 }

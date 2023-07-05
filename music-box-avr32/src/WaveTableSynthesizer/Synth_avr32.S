@@ -120,19 +120,8 @@ mov pSoundUnit,r12
 ld.uh r6,pSoundUnit[pVolume]
 mul mixOut,r6 //main vol
 asr mixOut,10
+sats mixOut,16 //clip into -32768 ~ 32767
 
-
-
-/*
-li t5,-32766
-bge mixOut,t5,saturateLowerBoundSatisfied
-move mixOut,t5
-saturateLowerBoundSatisfied:
-li t5,32766
-ble mixOut,t5,saturateEnd
-move mixOut,t5
-saturateEnd:
-*/
 st.w pSoundUnit[pMixOut],mixOut
 ldm	sp++,r4-r7,pc
 
@@ -245,8 +234,7 @@ mov pSynth,r12
 ld.w r5,pSynth[pLastSoundUnit]
 
 sub r5,-1
-sub r6,r5,POLY_NUM
-cp.w r6,0
+cp.w r6,POLY_NUM
 brne updateLastSoundUnitEnd
 mov r5,0
 updateLastSoundUnitEnd:
