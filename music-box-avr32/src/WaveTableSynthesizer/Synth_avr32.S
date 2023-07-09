@@ -42,7 +42,7 @@
 
 
 .equ ENVELOP_LEN,256
-.equ POLY_NUM,20
+.equ POLY_NUM,24
 .equ pMixOut,SoundUnitSize*POLY_NUM
 .equ pLastSoundUnit,pMixOut+4
 .equ pVolume,pLastSoundUnit+4
@@ -66,7 +66,7 @@ loopSynth:
     breq loopSynthEnd
     ld.w r5,pSoundUnit[pWaveTableAddress]
     ld.w r6,pSoundUnit[pWavetablePos]
-    asr  r6,8 //wavetablePos /= 256
+    lsr  r6,8 //wavetablePos /= 256
     lsl  r6,1 //wavetablePos *= 2
     add r6,r5  // Load signed 16bit sample to t6
     #ifdef USE_Interpolation
@@ -79,7 +79,7 @@ loopSynth:
     sub r7,r6
     ld.ub r5,pSoundUnit[pWavetablePos+3] //AVR32 is big endian
     mul r7,r5
-    asr r7,8 //wavetablePos /= 256
+    asr r7,8
     add r6,r7
     #endif
     st.w pSoundUnit[pSampleVal],r6
@@ -108,8 +108,7 @@ brne loopSynth
 
 asr mixOut,8 // mixOut/=255 ( envelope)
 
-
-mov r5,100
+mov r5,70
 mul mixOut,r5 //pre vol
 asr mixOut,8
 

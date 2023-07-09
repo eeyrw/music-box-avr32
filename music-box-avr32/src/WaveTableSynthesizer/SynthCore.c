@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "WaveTable.h"
 #include "EnvelopeTable.h"
+#include <asf.h>
 
 void SynthInit(Synthesizer *synth)
 {
@@ -27,7 +28,7 @@ void NoteOnC(Synthesizer *synth, uint8_t note)
 	uint32_t lastSoundUnit = synth->lastSoundUnit;
 	SoundUnit *soundUnits = synth->SoundUnitList;
 
-	//disable_interrupts();
+	cpu_irq_disable();
 	soundUnits[lastSoundUnit].increment = WaveTable_Increment[note & 0x7F];
 	soundUnits[lastSoundUnit].wavetablePos = 0;
 	soundUnits[lastSoundUnit].waveTableAddress = (uint32_t)WaveTable;
@@ -36,13 +37,43 @@ void NoteOnC(Synthesizer *synth, uint8_t note)
 	soundUnits[lastSoundUnit].waveTableAttackLen = WAVETABLE_ATTACK_LEN;
 	soundUnits[lastSoundUnit].envelopeLevel = 255;
 	soundUnits[lastSoundUnit].envelopePos = 0;
-	//enable_interrupts();
+	cpu_irq_enable();
 
 	lastSoundUnit++;
 	if (lastSoundUnit == POLY_NUM)
 		lastSoundUnit = 0;
 
 	synth->lastSoundUnit = lastSoundUnit;
+}
+
+void NoteOnGreedy(Synthesizer *synth, uint8_t note)
+{
+	uint32_t lastSoundUnit = synth->lastSoundUnit;
+	SoundUnit *soundUnits = synth->SoundUnitList;
+	
+	int minimalLevelUnitIdx = 0;
+	int level = 0xFF;
+	for (int i=0;i<POLY_NUM;i++)
+	{
+		if(soundUnits[i].envelopeLevel < level)
+		{
+			level = soundUnits[i].envelopeLevel;
+			minimalLevelUnitIdx = i;
+		}
+	}
+
+cpu_irq_disable();
+
+			soundUnits[minimalLevelUnitIdx].increment = WaveTable_Increment[note & 0x7F];
+			soundUnits[minimalLevelUnitIdx].wavetablePos = 0;
+			soundUnits[minimalLevelUnitIdx].waveTableAddress = (uint32_t)WaveTable;
+			soundUnits[minimalLevelUnitIdx].waveTableLen = WAVETABLE_LEN;
+			soundUnits[minimalLevelUnitIdx].waveTableLoopLen = WAVETABLE_LOOP_LEN;
+			soundUnits[minimalLevelUnitIdx].waveTableAttackLen = WAVETABLE_ATTACK_LEN;
+			soundUnits[minimalLevelUnitIdx].envelopeLevel = 255;
+			soundUnits[minimalLevelUnitIdx].envelopePos = 0;
+cpu_irq_enable();
+	
 }
 
 void SynthC(Synthesizer *synth)

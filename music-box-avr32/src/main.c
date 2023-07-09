@@ -8,9 +8,82 @@ Player mPlayer;
 
 int16_t AudioBuffer[AUDIO_BUFFER_SIZE*2];
 volatile uint32_t BufferToggle;
+volatile uint32_t RequireUpdate;
 
-volatile Synthesizer mainSynth;
 void synth_wave(short *buffer_pp, int len);
+
+#define ONE_FIX_POINT 255
+int lastGain = ONE_FIX_POINT;
+#define timeConstAttack 10
+#define timeConstRelease 200
+int lastPeak = 0;
+int compressEffect(int sampleIn,int threshold)
+{
+	int currentGain;
+	int currentPeak;
+	if (abs(sampleIn) > threshold)
+	{
+		currentGain = threshold * ONE_FIX_POINT / abs(sampleIn);
+	}
+	else
+	{
+		currentGain = ONE_FIX_POINT;
+	}
+	currentPeak = currentGain;
+
+	if (lastPeak > currentPeak)
+	{
+		currentPeak = (timeConstAttack*lastPeak + (ONE_FIX_POINT-timeConstAttack) *currentGain)/ ONE_FIX_POINT;
+	}
+	else
+	{
+		currentPeak = (timeConstRelease*lastPeak + (ONE_FIX_POINT - timeConstRelease) *currentGain) / ONE_FIX_POINT;
+	}
+	lastPeak = currentPeak;
+
+	return sampleIn * currentPeak / ONE_FIX_POINT;
+}
+
+void compressEffect2(short* samplesIn,int len)
+{
+	int peak = 32767;
+	for (int i=0;i<len;i++)
+	{
+		int ap = abs(samplesIn[i]);
+		if(ap>peak)
+		peak = ap;
+	}
+	int gain = 32767*255/peak;
+	
+	if(gain<255)
+	{
+		for (int i=0;i<len;i++)
+		{
+			samplesIn[i] = (samplesIn[i]*gain)>>8;
+		}
+	}else
+	{
+	}
+
+
+}
+
+static void wp_start_ssc_tx(void)
+{
+	/* The PDCA is not able to synchronize its start of transfer with the
+	* SSC start of period, so this has to be done by polling the TF pin.
+	* Not doing so may result in channels being swapped randomly.
+	*/
+	Bool is_global_interrupt_enabled = Is_global_interrupt_enabled();
+	Disable_global_interrupt();
+	while(gpio_get_pin_value(AVR32_SSC_TX_FRAME_SYNC_0_0_PIN));
+	while(!gpio_get_pin_value(AVR32_SSC_TX_FRAME_SYNC_0_0_PIN));
+	pdca_enable(0);
+	pdca_enable_interrupt_reload_counter_zero(0);
+	if (is_global_interrupt_enabled)
+	Enable_global_interrupt();
+}
+
 
 
 /** \brief Main application entry point - init and loop to display ADC values */
@@ -38,7 +111,7 @@ int16_t ReadADC(uint16_t chn)
 	signed short adc_value_light = -1;
 	
 	if (adc_get_status(&AVR32_ADC, chn) == false)
-		adc_enable(&AVR32_ADC,chn);
+	adc_enable(&AVR32_ADC,chn);
 	/* Start conversions on all enabled channels */
 	adc_start(&AVR32_ADC);
 
@@ -75,7 +148,7 @@ void PwmLedInit(void)
 	/* With these settings, the output waveform period will be:
 	* (115200/256)/20 == 22.5Hz == (MCK/prescaler)/period, with
 	* MCK == 115200Hz, prescaler == 256, period == 20. */
-	pwm_channel.cdty = 90; /* Channel duty cycle, should be < CPRD. */
+	pwm_channel.cdty = 0; /* Channel duty cycle, should be < CPRD. */
 	pwm_channel.cprd = 1023; /* Channel period. */
 	pwm_channel.cupd = 0; /* Channel update is not used here. */
 	pwm_channel.CMR.calg = PWM_MODE_LEFT_ALIGNED; /* Channel mode. */
@@ -85,6 +158,8 @@ void PwmLedInit(void)
 	
 	/* Set channel configuration to channel 0,1. */
 	pwm_channel_init(0, &pwm_channel);
+	pwm_channel.cprd = 255; /* Channel period. */
+	pwm_channel.CMR.cpol = PWM_POLARITY_HIGH;      /* Channel polarity. */
 	pwm_channel_init(1, &pwm_channel);
 
 	/* Start channel 0. */
@@ -98,19 +173,20 @@ ISR(pdca_int_handler, AVR32_PDCA_IRQ_GROUP0, 0)
 ISR(pdca_int_handler, AVR32_PDCA_IRQ_GROUP, 0)
 #endif
 {
+	if(RequireUpdate)
+		RequireUpdate = 0;
 	if(BufferToggle)
 	{
 		pdca_reload_channel(0,
 		(void *)AudioBuffer, AUDIO_BUFFER_SIZE);
 		BufferToggle = 0;
-		synth_wave((void *)(AudioBuffer+AUDIO_BUFFER_SIZE), AUDIO_BUFFER_SIZE);
 	}else
 	{
 		pdca_reload_channel(0,
 		(void *)(AudioBuffer+AUDIO_BUFFER_SIZE), AUDIO_BUFFER_SIZE);
-		synth_wave((void *)(AudioBuffer), AUDIO_BUFFER_SIZE);
 		BufferToggle = 1;
 	}
+	RequireUpdate = 1;
 }
 
 void CodecInit(void)
@@ -150,6 +226,7 @@ void SSCInit(void)
 	};
 	
 	BufferToggle = 0;
+	RequireUpdate = 0;
 
 	/* Initialize the PDCA channel with the requested options. */
 	pdca_init_channel(0, &PDCA_OPTIONS);
@@ -176,18 +253,20 @@ void synth_wave(short *buffer_pp, int len)
 
 
 		int32_t rawSynthOutput = mPlayer.mainSynthesizer.mixOut;
+		//rawSynthOutput = compressEffect(rawSynthOutput, 20000);
 		//if (rawSynthOutput < -32768)
 		//{
-			//rawSynthOutput = -32768;
+		//rawSynthOutput = -32768;
 		//}
 		//else if (rawSynthOutput > 32767)
 		//{
-			//rawSynthOutput = 32767;
+		//rawSynthOutput = 32767;
 		//}
 		
 		buffer_pp[i] = rawSynthOutput;
 		buffer_pp[i + 1] = rawSynthOutput;
 	}
+	//compressEffect2(buffer_pp,len);
 }
 
 /*! \brief Main function, application starts executing here after
@@ -195,6 +274,7 @@ void synth_wave(short *buffer_pp, int len)
 */
 int main(void)
 {
+	int prevAmp=0;
 	sysclk_init();
 	PwmLedInit();
 	ADCInit();
@@ -209,16 +289,30 @@ int main(void)
 
 	cpu_irq_enable();	//udc_start();	//udc_attach();
 
-    PlayerInit(&mPlayer);
-    PlayerPlay(&mPlayer);
+	PlayerInit(&mPlayer);
+	PlayerPlay(&mPlayer);
 	
 	printf("Debug uart is working!");
 
 	while (1)
 	{
 
-        PlayerProcess(&mPlayer);
+		if(RequireUpdate)
+		{
+			if(BufferToggle)
+			{
+				synth_wave((void *)(AudioBuffer+AUDIO_BUFFER_SIZE), AUDIO_BUFFER_SIZE);
+			}else
+			{
+				synth_wave((void *)(AudioBuffer), AUDIO_BUFFER_SIZE);
+			}
+			RequireUpdate = 0;
+		}
+		PlayerProcess(&mPlayer);
 		mPlayer.mainSynthesizer.volume = ReadADC(0);
-		//AVR32_PWM.channel[0].cupd = adcV;
+		int currentAmp = abs(mPlayer.mainSynthesizer.mixOut)>>2;
+		int a = 20;
+		AVR32_PWM.channel[0].cupd = (a*currentAmp+(255-a)*prevAmp)>>8;
+		prevAmp = AVR32_PWM.channel[0].cupd;
 	}
 }

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define POLY_NUM 20
+#define POLY_NUM 24
 
 typedef struct _SoundUnit
 {
@@ -50,6 +50,7 @@ typedef struct _InstrumentInfo
 extern void SynthInit(Synthesizer *synth);
 
 //#ifdef RUN_TEST
+extern void NoteOnGreedy(Synthesizer *synth, uint8_t note);
 extern void NoteOnC(Synthesizer *synth, uint8_t note);
 extern void SynthC(Synthesizer *synth);
 extern void GenDecayEnvlopeC(Synthesizer *synth);
