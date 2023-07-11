@@ -8,7 +8,7 @@ extern unsigned char Score[];
 
 void Player32kProc(Player *player)
 {
-    SynthAsm(&(player->mainSynthesizer));
+    //SynthAsm(&(player->mainSynthesizer));
     player->currentTick++;
     if(player->decayGenTick<100)
          player->decayGenTick+=1;

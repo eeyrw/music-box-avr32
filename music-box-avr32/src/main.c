@@ -243,31 +243,31 @@ void SSCInit(void)
 	
 }
 
-void synth_wave(short *buffer_pp, int len)
-{
-
-
-	for (int i = 0; i < len; i += 2)
-	{
-		Player32kProc(&mPlayer);
-
-
-		int32_t rawSynthOutput = mPlayer.mainSynthesizer.mixOut;
-		//rawSynthOutput = compressEffect(rawSynthOutput, 20000);
-		//if (rawSynthOutput < -32768)
-		//{
-		//rawSynthOutput = -32768;
-		//}
-		//else if (rawSynthOutput > 32767)
-		//{
-		//rawSynthOutput = 32767;
-		//}
-		
-		buffer_pp[i] = rawSynthOutput;
-		buffer_pp[i + 1] = rawSynthOutput;
-	}
-	//compressEffect2(buffer_pp,len);
-}
+//void synth_wave(short *buffer_pp, int len)
+//{
+//
+//
+	//for (int i = 0; i < len; i += 2)
+	//{
+		//Player32kProc(&mPlayer);
+//
+//
+		//int32_t rawSynthOutput = mPlayer.mainSynthesizer.mixOut;
+		////rawSynthOutput = compressEffect(rawSynthOutput, 20000);
+		////if (rawSynthOutput < -32768)
+		////{
+		////rawSynthOutput = -32768;
+		////}
+		////else if (rawSynthOutput > 32767)
+		////{
+		////rawSynthOutput = 32767;
+		////}
+		//
+		//buffer_pp[i] = rawSynthOutput;
+		//buffer_pp[i + 1] = rawSynthOutput;
+	//}
+	////compressEffect2(buffer_pp,len);
+//}
 
 /*! \brief Main function, application starts executing here after
 *         initializing the stack pointer.
@@ -301,10 +301,12 @@ int main(void)
 		{
 			if(BufferToggle)
 			{
-				synth_wave((void *)(AudioBuffer+AUDIO_BUFFER_SIZE), AUDIO_BUFFER_SIZE);
+				//synth_wave((void *)(AudioBuffer+AUDIO_BUFFER_SIZE), AUDIO_BUFFER_SIZE);
+				SynthAsmFrame(&mPlayer.mainSynthesizer,(void *)(AudioBuffer+AUDIO_BUFFER_SIZE), AUDIO_BUFFER_SIZE);
 			}else
 			{
-				synth_wave((void *)(AudioBuffer), AUDIO_BUFFER_SIZE);
+				//synth_wave((void *)(AudioBuffer), AUDIO_BUFFER_SIZE);
+				SynthAsmFrame(&mPlayer.mainSynthesizer,(void *)(AudioBuffer), AUDIO_BUFFER_SIZE);
 			}
 			RequireUpdate = 0;
 		}

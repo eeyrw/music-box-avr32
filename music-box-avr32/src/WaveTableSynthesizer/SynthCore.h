@@ -58,6 +58,6 @@ extern void GenDecayEnvlopeC(Synthesizer *synth);
 
 extern void NoteOnAsm(Synthesizer *synth, uint8_t note);
 extern void GenDecayEnvlopeAsm(Synthesizer *synth);
-extern void SynthAsm(Synthesizer *synth);
+extern void SynthAsmFrame(Synthesizer *synth,int16_t* framePtr,uint32_t frameSize);
 
 #endif

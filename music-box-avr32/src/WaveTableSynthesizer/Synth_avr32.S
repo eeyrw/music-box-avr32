@@ -3,7 +3,7 @@
 
 
 //.set noreorder
-.global SynthAsm
+.global SynthAsmFrame
 .global GenDecayEnvlopeAsm
 .global NoteOnAsm
 
@@ -48,18 +48,20 @@
 .equ pVolume,pLastSoundUnit+4
 
 .section .text
-SynthAsm:
+SynthAsmFrame:
 #define pSoundUnit r8
 #define loopIndex r9
-#define mixOut r10
-#define USE_Interpolation
-pushm	r4-r7,lr
-mov loopIndex, POLY_NUM
 
+#define framePtr r11
+#define frameSize r10
+#define USE_Interpolation
+
+pushm	r0-r3,r4-r7,lr
+#define mixOut r3
+frameLoopSynth:
+mov loopIndex, POLY_NUM
 mov mixOut, 0
 mov pSoundUnit,r12
-
-
 loopSynth:
     ld.w r4,pSoundUnit[pEnvelopeLevel]
 	cp.w r4,0
@@ -122,7 +124,16 @@ asr mixOut,10
 sats mixOut,16 //clip into -32768 ~ 32767
 
 st.w pSoundUnit[pMixOut],mixOut
-ldm	sp++,r4-r7,pc
+
+st.h framePtr++,mixOut
+st.h framePtr++,mixOut
+
+frameLoopSynthEnd:
+sub frameSize,2 // set n = n-2
+cp.w frameSize,0
+brne frameLoopSynth
+ldm	sp++,r4-r7,r0-r3,pc
+
 
 
 GenDecayEnvlopeAsm:

@@ -134,26 +134,26 @@ extern Player mainPlayer;
 
 void TestSynth(void)
 {
-	uint32_t maxErrorCnt=3;
-    printf("~~~~~~~Start testing synthesizer.~~~~~~~\n");
-    for (uint32_t i = 0; i < POLY_NUM; i++)
-    {
-        NoteOnC(&synthesizerC,i % 56);
-        NoteOnC(&synthesizerASM,i % 56);
-    }
-    for (uint32_t i = 0; i < TEST_LOOP_NUN; i++)
-    {
-        for (uint32_t i = 0; i < 200; i++)
-        {
-            SynthAsm(&synthesizerASM);
-            SynthC(&synthesizerC);
-        }
-        GenDecayEnvlopeAsm(&synthesizerASM);
-        GenDecayEnvlopeC(&synthesizerC);
-        printf("=============%d==============\n", i);
-        if (SynthParamterCompare(&synthesizerC, &synthesizerASM) > 0 && maxErrorCnt--==0)
-            break;
-    }
+	//uint32_t maxErrorCnt=3;
+    //printf("~~~~~~~Start testing synthesizer.~~~~~~~\n");
+    //for (uint32_t i = 0; i < POLY_NUM; i++)
+    //{
+        //NoteOnC(&synthesizerC,i % 56);
+        //NoteOnC(&synthesizerASM,i % 56);
+    //}
+    //for (uint32_t i = 0; i < TEST_LOOP_NUN; i++)
+    //{
+        //for (uint32_t i = 0; i < 200; i++)
+        //{
+            //SynthAsm(&synthesizerASM);
+            //SynthC(&synthesizerC);
+        //}
+        //GenDecayEnvlopeAsm(&synthesizerASM);
+        //GenDecayEnvlopeC(&synthesizerC);
+        //printf("=============%d==============\n", i);
+        //if (SynthParamterCompare(&synthesizerC, &synthesizerASM) > 0 && maxErrorCnt--==0)
+            //break;
+    //}
 }
 
 void TestProcess(void)
