@@ -309,6 +309,10 @@ int main(void)
 				SynthAsmFrame(&mPlayer.mainSynthesizer,(void *)(AudioBuffer), AUDIO_BUFFER_SIZE);
 			}
 			RequireUpdate = 0;
+			for (int i=0;i<AUDIO_BUFFER_SIZE;i+=2)
+			{
+				Player32kProc(&mPlayer);
+			}
 		}
 		PlayerProcess(&mPlayer);
 		mPlayer.mainSynthesizer.volume = ReadADC(0);
